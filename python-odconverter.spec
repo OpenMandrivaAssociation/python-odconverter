@@ -1,11 +1,13 @@
 %define	oname	pyodconverter
 %define	module	odconverter
+%define	user	oooconvert
+%define	service	ooo-converter
 %define revno	r27
 
 Summary:	Python OpenDocument Converter
 Name:		python-%{module}
 Version:	1.2
-Release:	%mkrel 0.%{revno}.1
+Release:	%mkrel 0.%{revno}.2
 License:	LGPLv2.1+
 Group:		Development/Python
 Url:		http://www.artofsolving.com/opensource/pyodconverter
@@ -15,6 +17,7 @@ Url:		http://www.artofsolving.com/opensource/pyodconverter
 # check with me first. (hopefully upstream author will agree on merging when
 # suggested sometime soon...)
 Source0:	%{oname}-%{version}.tar.gz
+Source1:	ooo-converter.init
 %py_requires -d
 # Backport for MES 5 where unfortunately we need to make the package arch
 # specific to get the necessary dependency on the desired OOo package to
@@ -41,9 +44,33 @@ from the command line using OpenOffice.org.
 %build
 python setup.py build
 
+tee %{service}.sysconf << EOH
+# OpenOffice.org
+OOFFICE_HOST="localhost"
+OOFFICE_PORT="8100"
+# Any additional options to pass to ooffice can be set here
+OOFFICE_OPTIONS="-norestore -nofirststartwizard -invisible -nodefault -nologo -nolockcheck"
+EOH
+
 %install
 rm -rf %{buildroot}
 python setup.py install --root=%{buildroot}
+
+install -d %{buildroot}%{_localstatedir}/run/%{service}
+install -m755 %{SOURCE1} -D %{buildroot}%{_initrddir}/%{service}
+install -m644 %{service}.sysconf -D %{buildroot}%{_sysconfdir}/sysconfig/%{service}
+
+%pre
+%_pre_useradd %{user} %{_localstatedir}/run/%{service} /sbin/nologin
+
+%post
+%_post_service %{service}
+
+%postun
+%_postun_userdel %{user}
+
+%preun
+%_preun_service %{service}
 
 %clean
 rm -rf %{buildroot}
@@ -51,6 +78,8 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root)
 %{_bindir}/DocumentConverter
+%{_initrddir}/%{service}
+%{_sysconfdir}/sysconfig/%{service}
 %{python_sitelib}/%{module}.py*
 %{python_sitelib}/%{oname}*.egg-info
-
+%attr(700,%{user},%{user}) %dir %{_localstatedir}/run/%{service}
