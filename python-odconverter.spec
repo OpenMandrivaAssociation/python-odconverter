@@ -18,7 +18,6 @@ Url:		http://www.artofsolving.com/opensource/pyodconverter
 # suggested sometime soon...)
 Source0:	%{oname}-%{version}.tar.gz
 Source1:	ooo-converter.init
-%py_requires -d
 # Backport for MES 5 where unfortunately we need to make the package arch
 # specific to get the necessary dependency on the desired OOo package to
 # have the document converter working with 64 bit java...
