@@ -18,18 +18,9 @@ Url:		http://www.artofsolving.com/opensource/pyodconverter
 # suggested sometime soon...)
 Source0:	%{oname}-%{version}.tar.gz
 Source1:	ooo-converter.init
-# Backport for MES 5 where unfortunately we need to make the package arch
-# specific to get the necessary dependency on the desired OOo package to
-# have the document converter working with 64 bit java...
-%if "%{mdvver}" == "200900" && "%{_lib}" == "lib64"
-%define ext64 64
-%define _enable_debug_packages %{nil}
-%define debug_package %{nil}
-%else
 BuildArch:	noarch
-%endif
-Requires:	openoffice.org%{?ext64}-pyuno openoffice.org%{?ext64}-writer
-Requires:	openoffice.org%{?ext64}-calc openoffice.org%{?ext64}-impress
+Requires:	openoffice.org-pyuno openoffice.org-writer
+Requires:	openoffice.org-calc openoffice.org-impress
 Requires(pre):	rpm-helper
 Requires(preun):	rpm-helper
 BuildRequires:	python-setuptools
