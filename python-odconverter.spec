@@ -21,7 +21,11 @@ Source1:	ooo-converter.init
 BuildArch:	noarch
 Requires:	openoffice.org-pyuno openoffice.org-writer
 Requires:	openoffice.org-calc openoffice.org-impress
+%if %{mdvver} == 200900
+Requires:	python-setuptools
+%else
 Requires:	python-pkg-resources
+%endif
 Requires(pre):	rpm-helper
 Requires(preun):	rpm-helper
 BuildRequires:	python-setuptools
