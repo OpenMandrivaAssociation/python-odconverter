@@ -7,7 +7,7 @@
 Summary:	Python OpenDocument Converter
 Name:		python-%{module}
 Version:	1.2
-Release:	%mkrel 0.%{revno}.2
+Release:	%mkrel 0.%{revno}.3
 License:	LGPLv2.1+
 Group:		Development/Python
 Url:		http://www.artofsolving.com/opensource/pyodconverter
