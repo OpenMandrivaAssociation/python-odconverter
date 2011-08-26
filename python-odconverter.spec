@@ -29,7 +29,7 @@ Requires:	openoffice.org-calc openoffice.org-impress
 Requires:	python-setuptools
 %endif
 Requires(pre):	rpm-helper
-Requires(preun):	rpm-helper
+Requires(preun):rpm-helper
 BuildRequires:	python-setuptools
 
 %description
