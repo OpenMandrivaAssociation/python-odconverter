@@ -2,12 +2,11 @@
 %define	module	odconverter
 %define	user	oooconvert
 %define	service	ooo-converter
-%define revno	r27
 
 Summary:	Python OpenDocument Converter
 Name:		python-%{module}
-Version:	1.2
-Release:	%mkrel 0.%{revno}.3
+Version:	1.3
+Release:	1
 License:	LGPLv2.1+
 Group:		Development/Python
 Url:		http://www.artofsolving.com/opensource/pyodconverter
@@ -19,17 +18,19 @@ Url:		http://www.artofsolving.com/opensource/pyodconverter
 Source0:	%{oname}-%{version}.tar.gz
 Source1:	ooo-converter.init
 BuildArch:	noarch
+%if "%{distepoch}" >= "2011"
+Requires:	libreoffice-pyuno libreoffice-writer
+Requires:	libreoffice-calc libreoffice-impress
+%else
 Requires:	openoffice.org-pyuno openoffice.org-writer
 Requires:	openoffice.org-calc openoffice.org-impress
+%endif
 %if %{mdvver} == 200900
 Requires:	python-setuptools
-%else
-Requires:	python-pkg-resources
 %endif
 Requires(pre):	rpm-helper
 Requires(preun):	rpm-helper
 BuildRequires:	python-setuptools
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description
 PyODConverter is a Python module for automating office document conversions
@@ -50,7 +51,6 @@ OOFFICE_OPTIONS="-norestore -nofirststartwizard -invisible -nodefault -nologo -n
 EOH
 
 %install
-rm -rf %{buildroot}
 python setup.py install --root=%{buildroot}
 
 install -d %{buildroot}%{_localstatedir}/run/%{service}
@@ -69,11 +69,7 @@ install -m644 %{service}.sysconf -D %{buildroot}%{_sysconfdir}/sysconfig/%{servi
 %preun
 %_preun_service %{service}
 
-%clean
-rm -rf %{buildroot}
-
 %files
-%defattr(-,root,root)
 %{_bindir}/DocumentConverter
 %{_initrddir}/%{service}
 %{_sysconfdir}/sysconfig/%{service}
