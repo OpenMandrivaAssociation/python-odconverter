@@ -2,11 +2,12 @@
 %define	module	odconverter
 %define	user	oooconvert
 %define	service	ooo-converter
+%define revno	r27
 
 Summary:	Python OpenDocument Converter
 Name:		python-%{module}
-Version:	1.3
-Release:	1
+Version:	1.2
+Release:	0.%{revno}.4
 License:	LGPLv2.1+
 Group:		Development/Python
 Url:		http://www.artofsolving.com/opensource/pyodconverter
@@ -18,18 +19,13 @@ Url:		http://www.artofsolving.com/opensource/pyodconverter
 Source0:	%{oname}-%{version}.tar.gz
 Source1:	ooo-converter.init
 BuildArch:	noarch
-%if "%{distepoch}" >= "2011"
-Requires:	libreoffice-pyuno libreoffice-writer
-Requires:	libreoffice-calc libreoffice-impress
-%else
-Requires:	openoffice.org-pyuno openoffice.org-writer
-Requires:	openoffice.org-calc openoffice.org-impress
-%endif
-%if %{mdvver} == 200900
-Requires:	python-setuptools
-%endif
+Requires:	libreoffice-pyuno
+Requires:	libreoffice-writer
+Requires:	libreoffice-calc
+Requires:	libreoffice-impress
+Requires:	python-pkg-resources
 Requires(pre):	rpm-helper
-Requires(preun):rpm-helper
+Requires(preun):	rpm-helper
 BuildRequires:	python-setuptools
 
 %description
@@ -76,3 +72,4 @@ install -m644 %{service}.sysconf -D %{buildroot}%{_sysconfdir}/sysconfig/%{servi
 %{python_sitelib}/%{module}.py*
 %{python_sitelib}/%{oname}*.egg-info
 %attr(700,%{user},%{user}) %dir %{_localstatedir}/run/%{service}
+

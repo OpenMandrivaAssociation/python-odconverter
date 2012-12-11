@@ -1,0 +1,109 @@
+#!/bin/sh
+# Author: Per Øyvind Karlsen <peroyvind@mandriva.org>
+# 	  (c) 2010 - Linus AS (http://www.linus.no)
+#
+# chkconfig: - 60 95
+
+### BEGIN INIT INFO
+# Provides:       ooo-converter
+# Required-Start: $local_fs $syslog $network
+# Required-Stop:  $local_fs $syslog $network
+# Default-Start:        3 4 5
+# Default-Stop:   0 1 2       6
+# Short-Description: OpenOffice.org document conversion server
+# Description:    OpenOffice.org background daemon for efficiently converting documents.
+### END INIT INFO
+
+. /etc/init.d/functions
+
+DOCMGR_SYSCONFIG="/etc/sysconfig/ooo-converter"
+if [ -r $DOCMGR_SYSCONFIG ]; then
+    . $DOCMGR_SYSCONFIG
+fi
+
+NAME="OpenOffice.org document conversion server"
+
+OOFFICE_BIN="$(cat /usr/bin/ooffice* | tail -n1 | cut -d\   -f1).bin"
+if [ ! -x $OOFFICE_BIN ]; then
+    [ "$1" = "stop" ] && exit 0
+    gprintf "%s needs to exist and be executable\n" "$OOFFICE_BIN"
+    exit 5
+fi
+
+BASEBIN="$(basename $OOFFICE_BIN)"
+LOCK_FILE="/var/lock/subsys/${BASEBIN}"
+PID_FILE="/var/run/ooo-converter/${BASEBIN}.pid"
+
+# ensure that we're able to load the required python uno module, if not, it's
+# probably due to missing PYTHONPATH variable which we'll pick up by printing it
+# from a login shell executed which will be sure to have loaded /etc/profile.d/*.sh
+python -c 'import uno' &> /dev/null || export PYTHONPATH="$(sh --login -c 'echo $PYTHONPATH')"
+
+[ -z "$OOFFICE_HOST" ] && OOFFICE_HOST="127.0.0.1"
+[ -z "$OOFFICE_PORT" ] && OOFFICE_PORT="8100"
+[ -z "$OOFFICE_OPTIONS" ] && OOFFICE_OPTIONS="-norestore -nofirststartwizard -invisible -nodefault -nologo -nolockcheck"
+
+DOC_CONVERT="DocumentConverter --host=${OOFFICE_HOST} --port=${OOFFICE_PORT}"
+
+start() {
+	gprintf "Starting %s: " "${NAME}"
+	daemon --check ${OOFFICE_BIN} --pidfile ${PID_FILE} --user oooconvert "${DOC_CONVERT} --timeout=6 --daemon='${OOFFICE_BIN}' --options='${OOFFICE_OPTIONS}' --pidfile='${PID_FILE}'"
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && touch $LOCK_FILE
+	return $RETVAL
+}
+
+stop() {
+	gprintf "Shutting down %s: " "${NAME}"
+	${DOC_CONVERT} --stop=0
+	killproc -p $PID_FILE $BASEBIN
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && rm -f $LOCK_FILE
+	return $RETVAL
+}
+
+rh_status() {
+	# -l argument doesn't exist on MES 5, but is automatically set
+	# to /var/lock/$BASEBIN..
+	#status -p $PID_FILE -l $LOCK_FILE $BASEBIN &&
+	status -p $PID_FILE $BASEBIN &&
+	${DOC_CONVERT} --status > /dev/null
+
+	RETVAL=$?
+	[ $RETVAL == 4 ] && gprintf "Unable to connect to %s at %s\n" "${NAME}" "${OOFFICE_HOST}:${OOFFICE_PORT}"
+
+	return $RETVAL
+}
+
+rh_status_q() {
+	return $(rh_status >/dev/null 2>&1)
+}
+
+case "$1" in
+    start)
+	rh_status_q && exit 0
+	$1
+        ;;
+    stop)
+	$1
+        ;;
+    restart)
+	stop
+	start
+        ;;
+    condrestart|try-restart)
+	rh_status_q || exit 0
+	stop
+	start
+        ;;
+    status)
+	rh_status
+        ;;
+  *)
+        gprintf "Usage: %s {start|stop|status|restart|condrestart}\n" $0
+        RETVAL=2
+	;;
+esac
+exit $RETVAL
