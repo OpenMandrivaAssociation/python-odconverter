@@ -10,7 +10,7 @@ Version:	1.2
 Release:	0.%{revno}.4
 License:	LGPLv2.1+
 Group:		Development/Python
-Url:		http://www.artofsolving.com/opensource/pyodconverter
+Url:		https://www.artofsolving.com/opensource/pyodconverter
 # Based on my branch at http://launchpad.net/pyodconverter, heavily adapted
 # for use with DocMGR package, please don't replace, but rather just merge
 # the diff between previous upstream version if ever updating, or even better,
